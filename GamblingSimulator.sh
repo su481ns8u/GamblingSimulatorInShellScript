@@ -1,5 +1,7 @@
 ##!/bin/bash -x
 
+declare -A dayOfMonth
+
 AMOUNT_PER_DAY=100
 BET_PER_GAME=1
 WIN_STATE=1
@@ -7,9 +9,11 @@ LOSE_STATE=0
 GOAL=$((AMOUNT_PER_DAY * 50/100))
 WIN_CASH=$(($AMOUNT_PER_DAY + $GOAL))
 LOSE_CASH=$(($AMOUNT_PER_DAY - $GOAL))
-TOTAL_DAYS=20
+TOTAL_DAYS=30
 
-twentyDayResult=0
+monthResult=0
+wins=0
+loss=0
 
 for ((day = 1; $day <= $TOTAL_DAYS; day++))
 do
@@ -26,12 +30,25 @@ do
 	done
 	if [ $gambResult -gt $AMOUNT_PER_DAY ]
 	then
-		echo "Won for the day $day"
-		twentyDayResult=$(($twentyDayResult + 1))
+		dayOfMonth["Day_$day"]=$GOAL
+		monthResult=$(($monthResult + 1))
 	else
-		echo "Lost for the day $day"
-		twentyDayResult=$(($twentyDayResult - 1))
+		dayOfMonth["Day_$day"]=-$GOAL
+		monthResult=$(($monthResult - 1))
 	fi
 done
 
-echo "Total won or lost amount for 20 days: "$(($twentyDayResult * 50))
+echo "Total won or lost amount for month: "$(($monthResult * $GOAL))
+for key in ${!dayOfMonth[@]};
+do
+	if [ ${dayOfMonth[$key]} -ge $GOAL ]
+	then
+		echo $key": Won"
+		wins=$(($wins + 50))
+	else
+		echo $key": Lost"
+		loss=$(($loss - 50))
+	fi
+done
+echo "Total won: "$(($wins))
+echo "Total loss: "$(($loss))
