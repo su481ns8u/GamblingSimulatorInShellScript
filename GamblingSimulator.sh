@@ -2,19 +2,29 @@
 
 AMOUNT_PER_DAY=100
 BET_PER_GAME=1
-
 WIN_STATE=1
 LOSE_STATE=0
+GOAL=$((AMOUNT_PER_DAY * 50/100))
+WIN_CASH=$(($AMOUNT_PER_DAY + $GOAL))
+LOSE_CASH=$(($AMOUNT_PER_DAY - $GOAL))
 
 gambResult=$AMOUNT_PER_DAY
-betResult=$((RANDOM%2))
-if [ $betResult -eq $WIN_STATE ]
+
+while [ $gambResult -lt $WIN_CASH -a $gambResult -gt $LOSE_CASH ]
+do
+	betResult=$((RANDOM%2))
+	if [ $betResult -eq $WIN_STATE ]
+	then
+		gambResult=$(($gambResult + $BET_PER_GAME))
+	else
+		gambResult=$(($gambResult - $BET_PER_GAME))
+	fi
+done
+
+if [ $gambResult -gt $AMOUNT_PER_DAY ]
 then
-	echo "Won Bet !"
-	gambResult=$(($gambResult + 1))
+	echo "Won for the day !"
 else
-	echo "Bet Lost !"
-	gambResult=$(($gambResult - 1))
+	echo "Lost for the day !"
 fi
-echo "Amount: "$gambResult
 
