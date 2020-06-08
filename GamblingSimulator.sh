@@ -1,7 +1,10 @@
 ##!/bin/bash -x
 
+#DICTNORY DECLARATIONS
 declare -A dayOfMonth
+declare -A dictForLuck
 
+#CONSTANT DECLARATIONS
 AMOUNT_PER_DAY=100
 BET_PER_GAME=1
 WIN_STATE=1
@@ -11,10 +14,12 @@ WIN_CASH=$(($AMOUNT_PER_DAY + $GOAL))
 LOSE_CASH=$(($AMOUNT_PER_DAY - $GOAL))
 TOTAL_DAYS=30
 
+#VARIABLES
 monthResult=0
 wins=0
 loss=0
 
+#GAMBLING AND STORING RESULTS IN A DICTIONARY
 for ((day = 1; $day <= $TOTAL_DAYS; day++))
 do
 	gambResult=$AMOUNT_PER_DAY
@@ -32,23 +37,60 @@ do
 	then
 		dayOfMonth["Day_$day"]=$GOAL
 		monthResult=$(($monthResult + 1))
+		dictForLuck["Day_$day"]=$monthResult
 	else
 		dayOfMonth["Day_$day"]=-$GOAL
 		monthResult=$(($monthResult - 1))
+		dictForLuck["Day_$day"]=$monthResult
 	fi
 done
 
-echo "Total won or lost amount for month: "$(($monthResult * $GOAL))
+#SORTING ELEMENTS OF DICT FOR LUCK
+min=${dictForLuck["Day_1"]}
+max=${dictForLuck["Day_1"]}
+for key in ${!dictForLuck[@]};
+do
+	if [ ${dictForLuck[$key]} -gt $max ]
+	then
+		max=${dictForLuck[$key]}
+	elif [ ${dictForLuck[$key]} -lt $min ]
+	then
+		min=${dictForLuck[$key]}
+	fi
+done
+
+#STORING LUCKY AND UNLUCKY DAYS IN SEPARATE ARRAYS
+lucky=0;
+unLucky=0;
+declare -a luckyDays
+declare -a unLuckyDays
+for key in "${!dictForLuck[@]}"
+do
+	if [ ${dictForLuck[$key]} -eq $max ]
+	then
+		luckyDays[$lucky]=$key
+		lucky=$(($lucky + 1))
+	elif [ ${dictForLuck[$key]} -eq $min ]
+	then
+		unLuckyDays[$unLucky]=$key
+		unLucky=$(($unLucky + 1))
+	fi
+done
+
+#CALCULATING TOTAL WINS AND LOOSES
 for key in ${!dayOfMonth[@]};
 do
 	if [ ${dayOfMonth[$key]} -ge $GOAL ]
 	then
-		echo $key": Won"
 		wins=$(($wins + 50))
 	else
-		echo $key": Lost"
 		loss=$(($loss - 50))
 	fi
 done
+
+#PRINTING ALL DATA
+echo "Total won or lost amount for month: "$(($monthResult * $GOAL))
 echo "Total won: "$(($wins))
 echo "Total loss: "$(($loss))
+echo "Lucky Days: "${luckyDays[@]}
+echo "Un-Lucky Days: "${unLuckyDays[@]}
